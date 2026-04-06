@@ -31,3 +31,6 @@ user = "vedicreader"
 author = "vedicreader"
 description = "Stateful Chat/AsyncChat for LiteRT-LM models"
 min_python = "3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

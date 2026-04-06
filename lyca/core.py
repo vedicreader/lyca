@@ -3,12 +3,12 @@
 # %% auto #0
 __all__ = ['get_text', 'extract_tool_calls', 'tool_schema', 'Response', 'Chat', 'AsyncChat']
 
-# %% ../nbs/00_core.ipynb #a868f037
+# %% ../nbs/00_core.ipynb #fee4b5c0
 """lyca — Stateful Chat/AsyncChat for LiteRT-LM models."""
 
 __all__ = ['Response', 'Chat', 'AsyncChat', 'get_text', 'extract_tool_calls', 'tool_schema']
 
-# %% ../nbs/00_core.ipynb #5972659c
+# %% ../nbs/00_core.ipynb #28e897c0
 import atexit, asyncio, os, re
 from dataclasses import dataclass, field
 from functools import partial
@@ -19,33 +19,33 @@ from msglm import mk_msg, mk_msgs
 from fastcore.utils import *
 from fastcore.meta import store_attr, delegates, patch
 
-# %% ../nbs/00_core.ipynb #f9cb70ad
+# %% ../nbs/00_core.ipynb #790c8726
 def get_text(response: dict) -> str:
     "Extract text string from a LiteRT-LM response dict."
     for item in response.get('content', []):
         if item.get('type') == 'text': return item['text']
     return ''
 
-# %% ../nbs/00_core.ipynb #6538e118
+# %% ../nbs/00_core.ipynb #a61d79cd
 def extract_tool_calls(text: str) -> list[dict]:
     "Parse Gemma 4 <|tool_call>...<tool_call|> tokens from raw text."
     def cast(v):
         try: return int(v)
-        except:
+        except (ValueError, TypeError):
             try: return float(v)
-            except: return {'true': True, 'false': False}.get(v.lower(), v.strip("'\"" ))
+            except (ValueError, TypeError): return {'true': True, 'false': False}.get(v.lower(), v.strip("'\"" ))
     return [{'name': n, 'arguments': {
                 k: cast((v1 or v2).strip())
                 for k, v1, v2 in re.findall(r'(\w+):(?:<\|"\|>(.*?)<\|"\|>|([^,}]*))', args)
              }}
             for n, args in re.findall(r'<\|tool_call>call:(\w+)\{(.*?)\}<tool_call\|>', text, re.DOTALL)]
 
-# %% ../nbs/00_core.ipynb #be91a434
+# %% ../nbs/00_core.ipynb #11750041
 def tool_schema(f) -> dict:
     "Show toolslm JSON schema for function `f` (informational — lyca passes callables directly)."
     return get_schema(f, pname='parameters')
 
-# %% ../nbs/00_core.ipynb #16e7ca37
+# %% ../nbs/00_core.ipynb #dc3afa01
 @dataclass
 class Response:
     "Return value from Chat.__call__."
@@ -62,7 +62,7 @@ class Response:
         md += f"\n\n<details>\n\n- " + '\n- '.join(details) + '\n\n</details>'
         return md
 
-# %% ../nbs/00_core.ipynb #88e0d714
+# %% ../nbs/00_core.ipynb #d4459f26
 _engines: dict = {}
 
 def _get_engine(model_path: str) -> 'litert_lm._Engine':
@@ -77,12 +77,12 @@ def _close_engines():
     "Close all cached engines."
     for e in _engines.values():
         try: e.__exit__(None, None, None)
-        except: pass
+        except Exception: pass
     _engines.clear()
 
 atexit.register(_close_engines)
 
-# %% ../nbs/00_core.ipynb #58ce5132
+# %% ../nbs/00_core.ipynb #2cf0891a
 class Chat:
     def __init__(self, model_path: str, sp: str = '', tools: list = None,
                  hist: list = None, max_steps: int = 5, max_tokens: int = 1024):
@@ -126,7 +126,7 @@ class Chat:
 
     def _close_conv(self):
         try: self._conv.__exit__(None, None, None)
-        except: pass
+        except Exception: pass
 
     def close(self):
         "Close the conversation."
@@ -135,7 +135,7 @@ class Chat:
     def __enter__(self): return self
     def __exit__(self, *exc): self.close()
 
-# %% ../nbs/00_core.ipynb #8a546818
+# %% ../nbs/00_core.ipynb #813eae11
 class AsyncChat(Chat):
     "Async streaming variant of Chat."
 
