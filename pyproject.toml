@@ -13,6 +13,7 @@ dependencies = [
     "litert-lm-api-nightly",
     "toolslm",
     "msglm",
+    "huggingface_hub",
 ]
 
 [project.optional-dependencies]
