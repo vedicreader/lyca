@@ -1,0 +1,9 @@
+project:
+  type: website
+
+website:
+  title: "lyca"
+  site-url: "https://vedicreader.github.io/lyca"
+  repo-url: "https://github.com/vedicreader/lyca"
+
+metadata-files: [nbdev.yml]
