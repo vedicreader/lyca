@@ -58,10 +58,17 @@ lyca.syscheck()                      # → dict: platform, arch, cpu, ram_gb,
 lyca.recommend()                     # rank models that fit this machine
 lyca.recommend(min_tps=10)           # minimum tokens/sec threshold
 
+lyca.quick_model()                   # recommend → pick top → download → Chat
+lyca.quick_model(sp="Be terse.")     # with system prompt
+lyca.quick_model(min_tps=10)         # minimum tokens/sec threshold
+
 lyca.download("gemma4-e4b")          # → str: absolute path to .litertlm file
 lyca.download("gemma4-e4b", dest="./models")
 
-lyca.register_model({                # extend registry at runtime
+# Download models not in the registry — pass any HF repo string
+lyca.download("some-org/my-custom-model", filename="model.litertlm")
+
+lyca.register_model({                # extend registry at runtime (rejects duplicates)
     'id': 'my-model', 'repo': 'org/repo', 'file': 'model.litertlm',
     'size_gb': 2.0, 'min_ram_gb': 3.0, 'task': 'chat'
 })
@@ -98,7 +105,7 @@ LiteRT-LM reads type hints + docstrings to generate schemas and dispatches tool 
 
 ```
 nbs/00_core.ipynb    → lyca/core.py   (Chat, AsyncChat, Response, helpers)
-nbs/01_fit.ipynb     → lyca/fit.py    (MODEL_REGISTRY, models, syscheck, recommend, download)
-tests/test_core.py                     (pure function + model-dependent tests)
-tests/test_fit.py                      (pure function tests for fit module)
+nbs/01_fit.ipynb     → lyca/fit.py    (MODEL_REGISTRY, models, syscheck, recommend, quick_model, download)
 ```
+
+Tests live as nbdev test cells in the notebooks (no separate tests/ folder).

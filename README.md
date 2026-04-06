@@ -13,6 +13,15 @@ pip install lyca          # or: pip install -e '.[dev]'
 ```python
 import lyca
 
+# Fastest path: auto-pick the best model, download, return Chat
+c = lyca.quick_model(sp="Be terse.")
+r = c("What is SQLite FTS5?")
+r.content
+```
+
+### Step-by-step
+
+```python
 lyca.recommend()                              # what fits your machine?
 path = lyca.download("gemma4-e4b")            # HF download with resume
 c = lyca.Chat(path, sp="Be terse.")
@@ -84,15 +93,17 @@ lyca.syscheck()                      # system info dict
 | `models(family, task, tag)` | function | List/filter model registry |
 | `syscheck()` | function | Detect RAM, CPU, GPU (cached) |
 | `recommend(min_tps, task)` | function | Rank models for this system |
+| `quick_model(task, min_tps, sp)` | function | Recommend → download → Chat |
 | `download(model_id)` | function | HF download with resume |
-| `register_model(entry)` | function | Add custom model to registry |
+| `register_model(entry)` | function | Add custom model (rejects duplicates) |
 | `MODEL_REGISTRY` | `list[dict]` | Curated model metadata |
 
 ## Testing
 
+Tests live as nbdev test cells in the notebooks:
+
 ```bash
-pytest tests/ -v -k 'not model'         # pure function tests (no model)
-pytest tests/ -v                         # full tests (auto-downloads model)
+python -m nbdev.test   # run all notebook test cells
 ```
 
 ## Development
@@ -101,5 +112,5 @@ pytest tests/ -v                         # full tests (auto-downloads model)
 
 ```bash
 python -m nbdev.export   # regenerate lyca/*.py
-pytest tests/ -v          # run tests
+python -m nbdev.test     # run notebook test cells
 ```
