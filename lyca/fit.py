@@ -9,10 +9,11 @@ __all__ = ['MODEL_REGISTRY', 'register_model', 'syscheck', 'models', 'recommend'
 __all__ = ['MODEL_REGISTRY', 'models', 'syscheck', 'recommend', 'download', 'register_model']
 
 # %% ../nbs/01_fit.ipynb #17d40aa1
-import os, re, platform, subprocess
+import os, re, platform, subprocess, functools
 from pathlib import Path
 
 from huggingface_hub import hf_hub_download, HfApi
+from fastcore.basics import first
 from fastcore.meta import patch
 
 # %% ../nbs/01_fit.ipynb #bd9789a5
@@ -163,11 +164,8 @@ def register_model(entry: dict) -> None:
 
 # %% ../nbs/01_fit.ipynb #4b64c00a
 def _resolve_entry(model_id: str) -> dict | None:
-    "Lookup a MODEL_REGISTRY entry by `id` or by `repo` string. Returns None if not found."
-    for e in MODEL_REGISTRY:
-        if e['id'] == model_id or e['repo'] == model_id:
-            return e
-    return None
+    "Lookup a MODEL_REGISTRY entry by `id` or by `repo` string."
+    return first(MODEL_REGISTRY, lambda e: e['id']==model_id or e['repo']==model_id)
 
 # %% ../nbs/01_fit.ipynb #9cf0eaab
 def _parse_apple_chip(brand: str) -> tuple:
@@ -179,6 +177,7 @@ def _parse_apple_chip(brand: str) -> tuple:
     return chip, tier_map[m.group(2)]
 
 # %% ../nbs/01_fit.ipynb #31c3317f
+@functools.lru_cache(maxsize=1)
 def syscheck() -> dict:
     "Detect RAM, CPU, platform, GPU availability. Returns a plain dict."
     plat = platform.system()
@@ -416,4 +415,4 @@ def from_hf(cls: AsyncChat, model_id: str, filename: str = None,
             dest: str = None, token: str = None, **kwargs):
     "Download model from HuggingFace then return a ready AsyncChat."
     path = download(model_id, filename=filename, dest=dest, token=token)
-    return cls(model_path=path, **kwargs)
+    return cls(path, **kwargs)

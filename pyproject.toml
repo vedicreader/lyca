@@ -19,7 +19,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "nbdev",
-    "huggingface_hub",
 ]
 
 [tool.nbdev]
@@ -32,6 +31,9 @@ user = "vedicreader"
 author = "vedicreader"
 description = "Stateful Chat/AsyncChat for LiteRT-LM models"
 min_python = "3.10"
+
+[tool.setuptools.packages.find]
+include = ["lyca*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
