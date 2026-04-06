@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lyca"
+version = "0.1.0"
+description = "Stateful Chat/AsyncChat for LiteRT-LM models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+dependencies = [
+    "litert-lm-api-nightly",
+    "toolslm",
+    "msglm",
+]
+
+[project.optional-dependencies]
+dev = [
+    "nbdev",
+    "huggingface_hub",
+]
+
+[tool.nbdev]
+lib_name = "lyca"
+lib_path = "lyca"
+nbs_path = "nbs"
+doc_path = "_docs"
+branch = "main"
+user = "vedicreader"
+author = "vedicreader"
+description = "Stateful Chat/AsyncChat for LiteRT-LM models"
+min_python = "3.10"
