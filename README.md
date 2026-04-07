@@ -1,32 +1,45 @@
 # lyca
 
-Stateful `Chat` / `AsyncChat` for on-device [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) models (Gemma 4, etc.) — the [Lisette](https://github.com/AnswerDotAI/lisette) equivalent for local inference.
+On-device LLM chat — the [Lisette](https://github.com/AnswerDotAI/lisette) equivalent for local [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) models.
 
 ## Install
 
 ```bash
-pip install litert-lm-api-nightly toolslm msglm
-pip install -e .
+pip install lyca          # or: pip install -e '.[dev]'
 ```
 
 ## Quick Start
 
 ```python
-from lyca import Chat
+import lyca
 
-# Download a model first:
-# pip install huggingface_hub
-# python -c "from huggingface_hub import hf_hub_download; print(hf_hub_download('litert-community/gemma-4-E2B-it-litert-lm', 'gemma-4-E2B-it.litertlm'))"
-
-c = Chat("/path/to/gemma-4-E2B-it.litertlm", sp="Be terse.")
+# Fastest path: auto-pick the best model, download, return Chat
+c = lyca.quick_model(sp="Be terse.")
 r = c("What is SQLite FTS5?")
-print(r.content)
+r.content
+```
+
+### Step-by-step
+
+```python
+lyca.recommend()                              # what fits your machine?
+path = lyca.download("gemma4-e4b")            # HF download with resume
+c = lyca.Chat(path, sp="Be terse.")
+r = c("What is SQLite FTS5?")
+r.content
+```
+
+### One-liner: download + chat
+
+```python
+c = lyca.Chat.from_hf("gemma4-e4b", sp="Be terse.")
+r = c("What is SQLite FTS5?")
 ```
 
 ### Multi-turn
 
 ```python
-c = Chat("/path/to/model.litertlm")
+c = lyca.Chat(path)
 c("My name is Karthik.")
 r = c("What's my name?")
 assert "Karthik" in r.content
@@ -39,47 +52,65 @@ def search(query: str, top_k: int = 5) -> list:
     """Search the knowledge base.
     Args:
         query: The search string.
-        top_k: Number of results to return.
+        top_k: Number of results.
     """
     return [{"content": f"Result for {query}"}]
 
-c = Chat("/path/to/model.litertlm", tools=[search])
-r = c("Search for 'RRF scoring' and summarise.")
+c = lyca.Chat(path, tools=[search])
+r = c("Search for 'RRF scoring'.")
 ```
 
 ### Async Streaming
 
 ```python
-import asyncio
-from lyca import AsyncChat
+import asyncio, lyca
 
 async def main():
-    async with AsyncChat(model_path="/path/to/model.litertlm") as c:
+    async with lyca.AsyncChat(model_path=path) as c:
         async for chunk in c("Write a haiku about SQLite."):
             if isinstance(chunk, str): print(chunk, end="", flush=True)
 
 asyncio.run(main())
 ```
 
+## Model Registry
+
+```python
+lyca.models()                        # all models
+lyca.models(family="gemma4")         # filter by family
+lyca.models(tag="reasoning")         # filter by tag
+lyca.syscheck()                      # system info dict
+```
+
+## API
+
+| Symbol | Kind | Description |
+|---|---|---|
+| `Chat(path, sp, tools, hist)` | class | Stateful chat client |
+| `AsyncChat(model_path=path)` | class | Async streaming variant |
+| `Chat.from_hf(model_id, **kw)` | classmethod | Download + Chat in one call |
+| `Response` | dataclass | `.content`, `.tool_calls`, `.finish_reason` |
+| `models(family, task, tag)` | function | List/filter model registry |
+| `syscheck()` | function | Detect RAM, CPU, GPU (cached) |
+| `recommend(min_tps, task)` | function | Rank models for this system |
+| `quick_model(task, min_tps, sp)` | function | Recommend → download → Chat |
+| `download(model_id)` | function | HF download with resume |
+| `register_model(entry)` | function | Add custom model (rejects duplicates) |
+| `MODEL_REGISTRY` | `list[dict]` | Curated model metadata |
+
 ## Testing
 
+Tests live as nbdev test cells in the notebooks:
+
 ```bash
-# Pure function tests (no model needed)
-pytest tests/ -v -k 'not model'
-
-# Full tests with real model
-LYCA_MODEL_PATH=/path/to/gemma-4-E2B-it.litertlm pytest tests/ -v
-
-# Or let conftest.py auto-download the model
-pip install huggingface_hub
-pytest tests/ -v
+python -m nbdev.test   # run all notebook test cells
 ```
 
 ## Development
 
-Source lives in `nbs/00_core.ipynb`. After editing:
+`nbs/` is the source of truth (nbdev workflow):
 
 ```bash
-python -m nbdev.export   # regenerates lyca/core.py
-pytest tests/ -v          # run tests
-``` 
+python -m nbdev.export   # regenerate lyca/*.py
+python -m nbdev.test     # run notebook test cells
+```

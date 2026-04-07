@@ -11,10 +11,9 @@ __all__ = ['Response', 'Chat', 'AsyncChat', 'get_text', 'extract_tool_calls', 't
 # %% ../nbs/00_core.ipynb #28e897c0
 import atexit, asyncio, os, re
 from dataclasses import dataclass, field
-from functools import partial
 
 import litert_lm
-from toolslm.funccall import get_schema, mk_ns
+from toolslm.funccall import get_schema
 from msglm import mk_msg, mk_msgs
 from fastcore.utils import *
 from fastcore.meta import store_attr, delegates, patch

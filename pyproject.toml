@@ -13,12 +13,12 @@ dependencies = [
     "litert-lm-api-nightly",
     "toolslm",
     "msglm",
+    "huggingface_hub",
 ]
 
 [project.optional-dependencies]
 dev = [
     "nbdev",
-    "huggingface_hub",
 ]
 
 [tool.nbdev]
@@ -32,5 +32,5 @@ author = "vedicreader"
 description = "Stateful Chat/AsyncChat for LiteRT-LM models"
 min_python = "3.10"
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+[tool.setuptools.packages.find]
+include = ["lyca*"]
